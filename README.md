@@ -6,7 +6,7 @@ A fully deployed, end‑to‑end machine learning project that predicts annual m
 
 ## 🚀 Live Demo
 
-**Live App:** **
+**Live App:** *https://the-medical-cost-prediction.streamlit.app/*
 
 
 ## 📘 Project Overview
