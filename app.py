@@ -23,6 +23,10 @@ sex = st.sidebar.selectbox("Sex", ["male","female"])
 smoker = st.sidebar.selectbox("Smoker", ["yes","no"])
 region = st.sidebar.selectbox("Region", ["northeast","northwest","southeast","southwest"])
 
+# The training data covers age 18-64, BMI 15.96-53.13, and 0-5 children
+if age > 64 or not 15.96 <= bmi <= 53.13 or children > 5:
+    st.sidebar.warning("These details are outside the training data, so the estimate is less reliable.")
+
 # Prepare input dataframe with same columns/order as training
 data = dict.fromkeys(columns, 0)
 data["age"] = age
@@ -47,6 +51,7 @@ if st.button("Predict"):
     contrib = coefs * input_df.iloc[0]
     contrib = contrib.sort_values(ascending=False)
     st.table(contrib.head(8).to_frame(name="contribution"))
+    st.caption(f"The prediction also includes the model's intercept ({model.intercept_:,.2f}), which is not shown above.")
 
 # Optional visualizations
 if st.checkbox("Show dataset charge distribution (for context)"):
