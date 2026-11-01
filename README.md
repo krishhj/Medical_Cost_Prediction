@@ -23,7 +23,7 @@ Insurance companies estimate medical charges using various personal factors. Thi
 ## 🧵 Dataset
 
 **Source:** Kaggle — Medical Cost Personal Dataset
-**Rows:** 1,338
+**Rows:** 1,338 (1,337 after removing one duplicate)
 **Features:**
 
 * `age` — age of the patient
@@ -64,7 +64,6 @@ Steps taken:
 
 * Converted categorical variables (sex, smoker) into binary indicators
 * One-hot encoded region
-* Added optional interaction feature: `bmi_x_smoker`
 * Dropped original string columns
 
 Final numerical features ready for model training.
@@ -93,7 +92,9 @@ Linear Regression model results:
 * **R²:** ~0.81
 
 **Conclusion:**
-The model reduces error by **~58%**, and explains **~80% of the variance**. This is strong performance for this dataset.
+On this 80/20 split, the model reduces MAE by **~58%** compared with the baseline, and explains **~81% of the variance**.
+
+A 5-fold cross-validation of the same features gives a lower, more cautious estimate: **R² ~0.74 (std ~0.05)** and **MAE ~4,226**.
 
 ---
 
