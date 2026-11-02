@@ -94,7 +94,7 @@ Linear Regression model results:
 **Conclusion:**
 On this 80/20 split, the model reduces MAE by **~58%** compared with the baseline, and explains **~81% of the variance**.
 
-A 5-fold cross-validation of the same features gives a lower, more cautious estimate: **R² ~0.74 (std ~0.05)** and **MAE ~4,226**.
+A 5-fold cross-validation of the same features gives a lower, more cautious estimate: **R² ~0.74 (std ~0.04)** and **MAE ~4,210** (see the cross-validation cell in `model_training.ipynb`).
 
 ---
 
