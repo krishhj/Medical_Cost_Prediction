@@ -37,8 +37,18 @@ data["smoker_yes"] = 1 if smoker == "yes" else 0
 # region dummies: northeast is the base (all zero)
 for r in ["region_northwest","region_southeast","region_southwest"]:
     data[r] = 1 if r.split("_")[1] in region else 0  # simple mapping
+# Smoking costs far more for people who are also obese (BMI 30+)
+data["obese"] = 1 if bmi >= 30 else 0
+data["smoker_obese"] = data["smoker_yes"] * data["obese"]
 
 input_df = pd.DataFrame([data], columns=columns)
+
+labels = {
+    "age": "Age", "bmi": "BMI", "children": "Children", "sex_male": "Male",
+    "smoker_yes": "Smoker", "region_northwest": "Region: northwest",
+    "region_southeast": "Region: southeast", "region_southwest": "Region: southwest",
+    "obese": "Obese (BMI 30+)", "smoker_obese": "Smoker and obese",
+}
 
 if st.button("Predict"):
     pred = model.predict(input_df)[0]
@@ -46,12 +56,15 @@ if st.button("Predict"):
     st.success(f"Estimated annual medical charges: ${pred:,.2f}")
 
     # show simple comparison
-    st.write("Feature contributions (coefficients * input values):")
+    st.write("How much each factor adds to the estimate (coefficient × your value):")
     coefs = pd.Series(model.coef_, index=columns)
-    contrib = coefs * input_df.iloc[0]
-    contrib = contrib.sort_values(ascending=False)
-    st.table(contrib.head(8).to_frame(name="contribution"))
-    st.caption(f"The prediction also includes the model's intercept ({model.intercept_:,.2f}), which is not shown above.")
+    contrib = (coefs * input_df.iloc[0]).rename(index=labels)
+    contrib = contrib[contrib != 0].sort_values(ascending=False)
+    money = contrib.map(lambda v: f"-${-v:,.0f}" if v < 0 else f"${v:,.0f}")
+    st.table(money.to_frame(name="adds to cost"))
+    intercept = model.intercept_
+    shown = f"-${-intercept:,.0f}" if intercept < 0 else f"${intercept:,.0f}"
+    st.caption(f"The prediction also includes the model's starting value (intercept) of {shown}, which is not shown above.")
 
 # Optional visualizations
 if st.checkbox("Show dataset charge distribution (for context)"):

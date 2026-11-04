@@ -65,6 +65,7 @@ Steps taken:
 * Converted categorical variables (sex, smoker) into binary indicators
 * One-hot encoded region
 * Dropped original string columns
+* Added `obese` (BMI 30+) and `smoker_obese` for the improved model
 
 Final numerical features ready for model training.
 
@@ -85,28 +86,46 @@ Baseline model (predicting mean cost only):
 
 * **MAE:** ~9861.80
 
-Linear Regression model results:
+First linear regression model (original features):
 
 * **MAE:** ~4177.04
 * **RMSE:** ~5956.34
 * **R²:** ~0.81
 
-**Conclusion:**
-On this 80/20 split, the model reduces MAE by **~58%** compared with the baseline, and explains **~81% of the variance**.
+On this 80/20 split, it reduces MAE by **~58%** compared with the baseline. A 5-fold cross-validation gives a more cautious estimate: **R² ~0.74 (std ~0.04)** and **MAE ~4,210**.
 
-A 5-fold cross-validation of the same features gives a lower, more cautious estimate: **R² ~0.74 (std ~0.04)** and **MAE ~4,210** (see the cross-validation cell in `model_training.ipynb`).
+### Improved model (used in the app)
+
+The residuals showed the biggest misses were smokers with high BMI: smoking and obesity together cost far more than each one alone. Two features were added:
+
+* `obese`: 1 if BMI is 30 or more
+* `smoker_obese`: 1 if the person smokes **and** is obese
+
+Same 5 folds for every model:
+
+| Model | CV R² | CV MAE |
+|---|---|---|
+| Mean baseline | 0.00 | ~9,093 |
+| Linear regression (original features) | 0.74 (std 0.04) | ~4,210 |
+| **Linear + smoker × obese** | **0.86 (std 0.03)** | **~2,468** |
+| Random forest | 0.85 | ~2,517 |
+| Gradient boosting | 0.85 | ~2,518 |
+
+On the same 80/20 split, the improved model gets **MAE ~2,369, RMSE ~4,142, R² ~0.91**, about **76%** lower error than the baseline. It beats both tree models while staying a linear regression, so every coefficient can still be read in dollars.
 
 ---
 
 ## 🔍 Feature Importance & Interpretation
 
-Top contributors:
+Top contributors in the improved model (all else equal):
 
-* **smoker_yes** — largest effect (~+$23k)
-* **age** — older patients → higher cost
-* **bmi** — higher BMI → moderate cost increase
-* **children** — minor effect
-* **sex / region** — very small influence
+* **Smoking** — about **+$13.2k** for a smoker with BMI under 30, and about **+$32.8k** for a smoker with BMI 30+ (+$13.2k for smoking plus +$19.6k for smoking and obese together)
+* **age** — about +$259 per year
+* **children** — about +$559 per child
+* **bmi** — a small effect once obesity and smoking are accounted for
+* **sex / region** — small influence
+
+In the first model, smoking added about +$23k on average, because that model could not tell obese smokers from the rest.
 
 These match the patterns observed in EDA.
 
@@ -163,7 +182,7 @@ streamlit run app.py
 
 ## 📌 Future Improvements
 
-* Implement Random Forest / Gradient Boosting for better handling of nonlinearity
+* Tune the tree models further (they were compared with default-style settings)
 * Use log-transformed target to reduce heteroscedasticity
 * Add SHAP explanations
 * Add batch CSV upload in the app
